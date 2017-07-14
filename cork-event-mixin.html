@@ -38,9 +38,10 @@ class EventElement extends subclass {
   }
   
   _eb_init() {
-    if( this._eb_handlersSet ) return;
+    if( this._eb_handlersSet || !this.getEventBus() ) return;
+
     this._eb_handlersSet = true;
-    if( !this.getEventBus() || !this.bind ) return;
+    
     for( var key in this.bind ) {
       if( !this[this.bind[key]] ) {
         console.warn(`${this.nodeName} could not bind event ${key} to ${this.bind[key]}`);
@@ -52,16 +53,13 @@ class EventElement extends subclass {
 
   _eb_init_fn(key) {
     this[this.bind[key]] = this[this.bind[key]].bind(this);
-    this.getEventBus().on(key, (e) => {
-      this[this.bind[key]](e);
-    });
+    this.getEventBus().on(key, e => this[this.bind[key]](e));
   }
     
   disconnectedCallback() {
     super.disconnectedCallback();
-    if( !this._eb_unregisterOnDetach ) return;
+    if( !this._eb_unregisterOnDetach || !this.getEventBus() ) return;
     this._eb_handlersSet = false;
-    if( !this.getEventBus() || !this.bind ) return;
     
     for( var key in this.bind ) {
       if( !this[this.bind[key]] ) continue;
@@ -82,10 +80,12 @@ class EventElement extends subclass {
     });
   }
   
+  // adding polymer 1.0 helper back in
   fire(event, payload = {}) {
     this.dispatchEvent(new CustomEvent(event, {detail: payload}));
   }
 
+  // adding polymer 1.0 helper back in
   debounce(name, callback, timeout) {
     name = `_${name}Debouncer`;
     this[name] = Polymer.Debouncer.debounce(
