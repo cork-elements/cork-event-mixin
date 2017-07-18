@@ -85,7 +85,7 @@ class EventElement extends subclass {
         args.push(arguments[i]);
       }
 
-      this.getEventBus().emit.call(this, args);
+      this.getEventBus().emit.apply(this.getEventBus(), args);
     });
   }
   
