@@ -53,7 +53,13 @@ class EventElement extends subclass {
 
   _eb_init_fn(key) {
     this[this.bind[key]] = this[this.bind[key]].bind(this);
-    this.getEventBus().on(key, e => this[this.bind[key]](e));
+    this.getEventBus().on(key, e => {
+      try {
+        this[this.bind[key]](e);
+      } catch(e) {
+        console.error(e);
+      }
+    });
   }
     
   disconnectedCallback() {
@@ -75,6 +81,10 @@ class EventElement extends subclass {
   }
   
   emit() {
+    if( !EventBus._events[arguments[0]] ) {
+      console.warn(`No event registered: ${arguments[0]}`);
+    }
+
     var args = [arguments[0]];
 
     return new Promise((resolve, reject) => {
