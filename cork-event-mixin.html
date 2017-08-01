@@ -53,13 +53,9 @@ class EventElement extends subclass {
 
   _eb_init_fn(key) {
     this[this.bind[key]] = this[this.bind[key]].bind(this);
-    this.getEventBus().on(key, e => {
-      try {
-        this[this.bind[key]](e);
-      } catch(e) {
-        console.error(e);
-      }
-    });
+    this.getEventBus().on(key, function() {
+      this[this.bind[key]].apply(this, arguments);
+    }.bind(this));
   }
     
   disconnectedCallback() {
