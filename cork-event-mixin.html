@@ -97,7 +97,16 @@ class EventElement extends subclass {
   
   // adding polymer 1.0 helper back in
   fire(event, payload = {}) {
-    this.dispatchEvent(new CustomEvent(event, {detail: payload}));
+    this.dispatchEvent(
+      new CustomEvent(
+        event, 
+        {
+          detail: payload,
+          bubbles: true, 
+          composed: true
+        }
+      )
+    );
   }
 
   // adding polymer 1.0 helper back in
