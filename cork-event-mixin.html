@@ -14,12 +14,20 @@ class EventElement extends subclass {
     }
   }
 
+  set bind(value) {
+    this._bind = Object.assign(this.bind, value)
+  }
+
   get bind() {
-    return {};
+    if( !this._bind ) this._bind = {};
+    return this._bind;
   }
 
   constructor() {
     super();
+
+    this.bind = {};
+
     // have we initialized the handlers?
     this._eb_handlersSet = false;
     // do we want to detach listeners when element is detached
@@ -75,24 +83,34 @@ class EventElement extends subclass {
     }
     return window.EventBus;
   }
-  
-  emit() {
-    if( !EventBus._events[arguments[0]] ) {
-      console.warn(`No event registered: ${arguments[0]}`);
-    }
 
-    var args = [arguments[0]];
+  _iocInject(name) {
+    this[name] = this.getEventBus().inject(name);
 
-    return new Promise((resolve, reject) => {
-      args.push(resolve);
-      args.push(reject);
-
-      for( var i = 1; i < arguments.length; i++ ) {
-        args.push(arguments[i]);
+    if( this[name].store && this[name].store.events ) {
+      var events = this[name].store.events;
+      for( var key in events ) {
+        var methodName = this._createMethodNameFromEvent(events[key]);
+        if( !this[methodName] ) continue;
+        this.bind[events[key]] = methodName;
       }
+    }
+  }
 
-      this.getEventBus().emit.apply(this.getEventBus(), args);
-    });
+  _createMethodNameFromEvent(eventName) {
+    return '_on' + eventName
+                    .split('-')
+                    .map((part) => {
+                      return part.charAt(0).toUpperCase() + part.slice(1)
+                    })
+                    .join('');
+  
+  }
+  
+  callMethod() {
+    return this.getEventBus()
+                .callMethod
+                .apply(this.getEventBus(), arguments);
   }
   
   // adding polymer 1.0 helper back in
