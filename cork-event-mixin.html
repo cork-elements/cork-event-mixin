@@ -87,17 +87,28 @@ class EventElement extends subclass {
   _iocInject(name) {
     this[name] = this.getEventBus().inject(name);
 
+    // wire up any events from injected model
+    if( this[name].events ) {
+      this._iocRegisterEvents(this[name].events);
+    }
+
+    // wire up any events from injected models store
     if( this[name].store && this[name].store.events ) {
-      var events = this[name].store.events;
-      for( var key in events ) {
-        var methodName = this._createMethodNameFromEvent(events[key]);
-        if( !this[methodName] ) continue;
-        this.bind[events[key]] = methodName;
-      }
+      this._iocRegisterEvents(this[name].store.events);
     }
   }
 
-  _createMethodNameFromEvent(eventName) {
+  _iocRegisterEvents(events) {
+    for( var key in events ) {
+      var methodName = this._iocGetMethodNameFromEvent(events[key]);
+
+      // class did not define and event handler
+      if( !this[methodName] ) continue;
+      this.bind[events[key]] = methodName;
+    }
+  }
+
+  _iocGetMethodNameFromEvent(eventName) {
     return '_on' + eventName
                     .split('-')
                     .map((part) => {
