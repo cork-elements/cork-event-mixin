@@ -123,6 +123,12 @@ class EventElement extends subclass {
                 .callMethod
                 .apply(this.getEventBus(), arguments);
   }
+
+  emit() {
+    return this.getEventBus()
+                .emit
+                .apply(this.getEventBus(), arguments);
+  }
   
   // adding polymer 1.0 helper back in
   fire(event, payload = {}) {
